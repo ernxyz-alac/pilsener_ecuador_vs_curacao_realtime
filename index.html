@@ -219,7 +219,8 @@
                 // Compare server score against the last saved score (localStorage)
                 const savedScore = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [0, 0];
 
-                if (currentNumbers[0] > savedScore[0] || currentNumbers[1] > savedScore[1]) {
+                // only show EC goal
+                if (currentNumbers[0] > savedScore[0]) {
                     const scoreText = `<span>${homeScore}</span> &nbsp <span>${awayScore}</span>`;
                     document.getElementById("score").innerHTML = scoreText;
                     
