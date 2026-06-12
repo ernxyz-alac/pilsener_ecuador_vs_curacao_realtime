@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Live Game</title>
+    <title>Ecuador vs Curacao</title>
     <style>
         * {
             margin: 0;
@@ -130,26 +130,26 @@
 
     <!-- Centered Layout -->
     <div id="mainCard" class="live-score-container">
-        <img id="home-flag" src="https://flagcdn.com/w80/mx.png" class="flag-img" alt="Mexico">
+        <img id="away-flag" src="https://flagcdn.com/w160/ec.png" class="flag-img" alt="Ecuador">
         <div id="score" class="score-text"><span></span> 0 &nbsp; 0<span></span></div>
-        <img id="away-flag" src="https://flagcdn.com/w80/za.png" class="flag-img" alt="South Africa">
+        <img id="home-flag" src="https://flagcdn.com/w160/cw.png" class="flag-img" alt="Curazao">
     </div>
 
     <!-- <button id="testGoalBtn" class="test-btn">🎯 TEST</button> -->
 </div>
 
 <script>
-    const GAME_ID = "sudafrica_vs_mexico";
-    const STORAGE_KEY = "sudafrica_vs_mexico_score";
+    const GAME_ID = "ecuador_vs_curacao";
+    const STORAGE_KEY = "ecuador_vs_curacao_score";
     
     // 1. Get saved score for UI display and as the baseline for comparison
-    let previousNumbers = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [2, 0];
+    let previousNumbers = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [0, 0];
     document.getElementById("score").innerHTML = `<span>${previousNumbers[0]}</span> &nbsp <span>${previousNumbers[1]}</span>`;
 
     let celebrationActive = false;
     let goalTimeout = null;
 
-    function showGoal(teamName, scoreText) {
+    function showGoal() {
         if (celebrationActive) return;
 
         celebrationActive = true;
@@ -158,8 +158,6 @@
         
         mainCard.style.display = 'none';
         setTimeout(() => { mainCard.style.display = 'flex'; }, 2000);
-
-        const isMexico = teamName.includes("Mexico");
         
         goalScreen.innerHTML = `
             <video id="goalVideo" autoplay muted playsinline style="width: 100%; height: 100%; object-fit: cover;">
@@ -178,7 +176,7 @@
 
     async function loadData() {
         try {
-            const res = await fetch("https://doradobet-server.onrender.com/data?gameId=14879423");
+            const res = await fetch("https://doradobet-server.onrender.com/data?gameId=15682183");
             if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
             
             const data = await res.json();
@@ -201,8 +199,7 @@
                     const scoreText = `<span>${homeScore}</span> &nbsp <span>${awayScore}</span>`;
                     document.getElementById("score").innerHTML = scoreText;
                     
-                    let scoringTeam = currentNumbers[0] > savedScore[0] ? "Mexico" : "Sudafrica";
-                    showGoal(scoringTeam, scoreText);
+                    showGoal();
                     
                     // Only update localStorage when a goal has been detected
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(currentNumbers));
@@ -212,10 +209,11 @@
         } catch (error) { console.error("Error loading data:", error); }
     }
 
-    // document.getElementById('testGoalBtn').addEventListener('click', () => {
-    //     showGoal("Mexico", document.getElementById("score").textContent);
-    // });
-
+    /*
+    document.getElementById('testGoalBtn').addEventListener('click', () => {
+        showGoal();
+    });
+    */
     loadData();
     setInterval(loadData, 1000);
 </script>
