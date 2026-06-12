@@ -117,6 +117,30 @@
             font-weight: bold;
             transition: all 0.3s ease;
         }
+
+        /* GUAYAQUIL */
+        @media screen and (width: 1920px) {
+            /* Move container */
+            .live-score-container {
+                top: 35%;
+                gap: 0px;
+                margin-left: -20px;
+            }
+
+            /* Make flags larger */
+            .flag-img {
+                width: 500px; /* Adjust as needed */
+                height: auto;
+                min-width: 80px;
+            }
+
+            /* Make score text larger */
+            .score-text {
+                font-size: 30rem; /* Or use 64px, 5rem, etc. */
+                font-weight: bold;
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            }
+        }
     </style>
 </head>
 <body>
@@ -130,9 +154,9 @@
 
     <!-- Centered Layout -->
     <div id="mainCard" class="live-score-container">
-        <img id="away-flag" src="https://flagcdn.com/w160/ec.png" class="flag-img" alt="Ecuador">
+        <img id="away-flag" src="https://flagcdn.com/w320/ec.png" class="flag-img" alt="Ecuador">
         <div id="score" class="score-text"><span></span> 0 &nbsp; 0<span></span></div>
-        <img id="home-flag" src="https://flagcdn.com/w160/cw.png" class="flag-img" alt="Curazao">
+        <img id="home-flag" src="https://flagcdn.com/w320/cw.png" class="flag-img" alt="Curazao">
     </div>
 
     <!-- <button id="testGoalBtn" class="test-btn">🎯 TEST</button> -->
