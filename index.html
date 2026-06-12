@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Live Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        @font-face {
+            font-family: 'good-brush';
+            src: url('./fonts/good-brush.ttf');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background-color: #000;
+        }
+
+        body {
+            font-family: 'good-brush', Arial, sans-serif;
+        }
+
+        #video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 0;
+        }
+
+        #main-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .goal-screen {
+            position: absolute;
+            z-index: 10;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease;
+            text-align: center;
+        }
+
+        .goal-screen.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .live-score-container {
+            position: absolute;
+            z-index: 2;
+            display: flex;
+            justify-content: center;
+            align-items: baseline;
+            gap: 20px;
+            width: 100%;
+            top: 35%;
+            color: white;
+            transition: opacity 0.3s ease;
+            margin-left: -10px;
+        }
+
+        #mainCard {
+            display: flex;
+            justify-content: center;
+            align-items: baseline;
+        }
+
+        .flag-img {
+            width: 180px;
+            height: auto;
+            object-fit: contain;
+            vertical-align: middle;
+        }
+
+        .score-text {
+            font-size: 180px;
+            font-weight: bold;
+            text-shadow: 4px 4px 10px rgba(0,0,0,0.5);
+            margin: 0 20px;
+        }
+
+        .test-btn {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            z-index: 20;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            border: 2px solid #ffd700;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+<div id="main-container">
+    <video id="video" autoplay muted loop playsinline preload="auto">
+      <source src="./videos/bg.mp4" type="video/mp4">
+    </video>
+
+    <!-- Goal Celebration Screen -->
+    <div id="goalScreen" class="goal-screen"></div>
+
+    <!-- Centered Layout -->
+    <div id="mainCard" class="live-score-container">
+        <img id="home-flag" src="https://flagcdn.com/w80/mx.png" class="flag-img" alt="Mexico">
+        <div id="score" class="score-text"><span></span> 0 &nbsp; 0<span></span></div>
+        <img id="away-flag" src="https://flagcdn.com/w80/za.png" class="flag-img" alt="South Africa">
+    </div>
+
+    <!-- <button id="testGoalBtn" class="test-btn">🎯 TEST</button> -->
+</div>
+
+<script>
+    const GAME_ID = "sudafrica_vs_mexico";
+    const STORAGE_KEY = "sudafrica_vs_mexico_score";
+    
+    // 1. Get saved score for UI display and as the baseline for comparison
+    let previousNumbers = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [2, 0];
+    document.getElementById("score").innerHTML = `<span>${previousNumbers[0]}</span> &nbsp <span>${previousNumbers[1]}</span>`;
+
+    let celebrationActive = false;
+    let goalTimeout = null;
+
+    function showGoal(teamName, scoreText) {
+        if (celebrationActive) return;
+
+        celebrationActive = true;
+        const goalScreen = document.getElementById('goalScreen');
+        const mainCard = document.getElementById('mainCard');
+        
+        mainCard.style.display = 'none';
+        setTimeout(() => { mainCard.style.display = 'flex'; }, 2000);
+
+        const isMexico = teamName.includes("Mexico");
+        
+        goalScreen.innerHTML = `
+            <video id="goalVideo" autoplay muted playsinline style="width: 100%; height: 100%; object-fit: cover;">
+                <source src="./videos/goal.mp4" type="video/mp4">
+            </video>
+        `;
+        goalScreen.classList.add('show');
+
+        if (goalTimeout) clearTimeout(goalTimeout);
+        goalTimeout = setTimeout(() => {
+            goalScreen.classList.remove('show');
+            goalScreen.innerHTML = '';
+            celebrationActive = false;
+        }, 2500);
+    }
+
+    async function loadData() {
+        try {
+            const res = await fetch("https://doradobet-server.onrender.com/data?gameId=14879423");
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            
+            const data = await res.json();
+            
+            // If the score is empty, it means the game might have ended or data is unavailable.
+            // In this case, we don't update the UI or localStorage, keeping the last known values.
+            if (!data.score || data.score.trim() === "") return;
+
+            const scoreParts = data.score.split(", ");
+            
+            if (scoreParts.length === 2) {
+                const homeScore = parseInt(scoreParts[0].split(" -> ")[1]);
+                const awayScore = parseInt(scoreParts[1].split(" -> ")[1]);
+                const currentNumbers = [homeScore, awayScore];
+                
+                // Compare server score against the last saved score (localStorage)
+                const savedScore = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [0, 0];
+
+                if (currentNumbers[0] > savedScore[0] || currentNumbers[1] > savedScore[1]) {
+                    const scoreText = `<span>${homeScore}</span> &nbsp <span>${awayScore}</span>`;
+                    document.getElementById("score").innerHTML = scoreText;
+                    
+                    let scoringTeam = currentNumbers[0] > savedScore[0] ? "Mexico" : "Sudafrica";
+                    showGoal(scoringTeam, scoreText);
+                    
+                    // Only update localStorage when a goal has been detected
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(currentNumbers));
+                    previousNumbers = currentNumbers;
+                }
+            }
+        } catch (error) { console.error("Error loading data:", error); }
+    }
+
+    // document.getElementById('testGoalBtn').addEventListener('click', () => {
+    //     showGoal("Mexico", document.getElementById("score").textContent);
+    // });
+
+    loadData();
+    setInterval(loadData, 1000);
+</script>
+</body>
+</html>
