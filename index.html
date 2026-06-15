@@ -219,13 +219,11 @@
                 // Compare server score against the last saved score (localStorage)
                 const savedScore = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [0, 0];
 
-                // only show EC goal
-                if (currentNumbers[0] > savedScore[0]) {
-                    const scoreText = `<span>${homeScore}</span> &nbsp <span>${awayScore}</span>`;
-                    document.getElementById("score").innerHTML = scoreText;
-                    
-                    showGoal();
-                    
+                if(currentNumbers[0] > savedScore[0] || currentNumbers[1] > savedScore[1]) {
+                    // only show EC goal
+                    if (currentNumbers[0] > savedScore[0]) {
+                        showGoal();
+                    }
                     // Only update localStorage when a goal has been detected
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(currentNumbers));
                     previousNumbers = currentNumbers;
